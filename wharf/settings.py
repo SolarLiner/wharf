@@ -18,16 +18,14 @@ import re
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 SECRET_KEY = os.environ.get("SECRET_KEY", ')u-_udqved=rq9p3fc-6mv6xh7y%slo-5d=h1590(k19e+srxt')
 
-DEBUG = 'DYNO' not in os.environ # Debug off when deployed
+DEBUG = 'DYNO' not in os.environ  # Debug off when deployed
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -41,6 +39,7 @@ INSTALLED_APPS = [
     'django_jinja',
     'bootstrapform_jinja',
     'django_celery_results',
+    'sass_processor',
     'apps'
 ]
 
@@ -67,7 +66,7 @@ ROOT_URLCONF = 'wharf.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django_jinja.backend.Jinja2',
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -105,7 +104,7 @@ WSGI_APPLICATION = 'wharf.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {'default': dj_database_url.config(default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')) }
+DATABASES = {'default': dj_database_url.config(default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'))}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -125,7 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -139,9 +137,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'sass_processor.finders.CssFinder',
+]
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -149,7 +152,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # Wharf settings
 
 DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", None)
-if DOKKU_HOST == None: # default, so need to detect host
+if DOKKU_HOST == None:  # default, so need to detect host
     route = subprocess.check_output(["/sbin/ip", "route"]).decode("utf-8")
     ip = re.match("default via (\d+\.\d+\.\d+.\d+)", route)
     DOKKU_HOST = ip.groups()[0]
@@ -171,7 +174,14 @@ else:
 CELERY_RESULT_BACKEND = 'django-cache'
 CELERY_BROKER_URL = broker_url
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_SERIALISER = "pickle" # To fix exception serialisation. See https://github.com/celery/celery/pull/3592
+CELERY_TASK_SERIALISER = "pickle"  # To fix exception serialisation. See https://github.com/celery/celery/pull/3592
+
+# SASS settings
+
+SASS_PROCESSOR_INCLUDE_DIRS = [
+    os.path.join(BASE_DIR, 'node_modules'),
+]
+SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'
 
 LOGGING = {
     'version': 1,

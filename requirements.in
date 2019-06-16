@@ -8,6 +8,9 @@ celery
 celery[redis]
 django-redis
 django-celery-results
+libsass
+django-compressor
+django-sass-processor
 paramiko
 gitpython
 humanize
