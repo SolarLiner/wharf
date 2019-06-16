@@ -36,8 +36,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_jinja',
-    'bootstrapform_jinja',
     'django_celery_results',
     'sass_processor',
     'apps'
@@ -76,8 +74,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            "match_extension": None,
-            "app_dirname": "templates",
         },
     },
 ]
