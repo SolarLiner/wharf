@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+PSSWD_RESULT=""
+
+function install() {
+	local dir="$1"
+
+	if [[ -d "/var/lib/dokku/data/storage/wharf-ssh" ]]; then
+		echo "SSH folder for Wharf already found. Is Wharf already installed?"
+		exit 1
+	fi
+
+	install_plugin "redis" https://github.com/dokku/dokku-redis.git
+	install_plugin "postgres" https://github.com/dokku/dokku-postgres.git
+	install_plugin "letsencrypt" https://github.com/dokku/dokku-letsencrypt.git
+
+	dokku letsencrypt:cron-job --add
+
+	if (dokku apps:list | grep -Fxq wharf); then
+		echo "Wharf application already created. Please remove it before installing this plugin."
+		exit 1
+	fi
+	dokku apps:create wharf
+	mkdir /var/lib/dokku/data/storage/wharf-ssh/
+	chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/
+	dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/root/.ssh
+
+	dokku redis:create wharf && dokku redis:link wharf wharf
+	dokku postgres:create wharf && dokku redis:link wharf wharf
+
+	input_psswd
+	dokku config:set wharf ADMIN_PASSWORD=${PSSWD_RESULT}
+
+	pushd ${dir}
+	git clone https://github.com/palfrey/wharf.git
+	pushd wharf
+	git remote add dokku dokku@localhost:wharf
+	git push dokku master
+	popd
+	popd
+}
+
+function install_plugin() {
+	local name="$1"
+	local url="$2"
+
+	if ! dokku plugin:list | grep -Fxq ${name}; then
+		dokku plugin:install ${url}
+	fi
+}
+
+function input_passwd() {
+	local psswd=""
+	local psswd_confirm="!!"
+
+	while [[ ${psswd} != ${psswd_confirm} ]]; do
+		if [[ ${psswd} != "" ]]; then
+			echo "Passwords do not match."
+		fi
+		echo -n "Password: "
+		read -s psswd
+		echo
+		echo -n "Password (confirm): "
+		read -s psswd_confirm
+		echo
+	done
+
+	PSSWD_RESULT = ${psswd}
+}
+
+install "$1"
