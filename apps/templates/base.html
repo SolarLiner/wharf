@@ -1,17 +1,17 @@
-{% load sass_tags %}
+{% load static sass_tags %}
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-  <title>Wharf</title>
-  <link rel="icon" type="image/x-icon" href="{{ url('favicon') }}"/>
+  <title>{% block title %}Wharf{% endblock %}</title>
+  <link rel="icon" type="image/x-icon" href="{% static "favicon.ico" %}"/>
   <link rel="stylesheet" href="{% sass_src "styles.scss" %}">
 </head>
 <body class="bg-light">
-<section class="section">
-  <div class="container">
-    {% if messages %}
+{% if messages %}
+  <section class="section">
+    <div class="container">
       <ul class="columns is-multiline">
         {% for message in messages %}
           <li class="column is-6 is-12-mobile">
@@ -19,9 +19,9 @@
           </li>
         {% endfor %}
       </ul>
-    {% endif %}
-    {% block body %}{% endblock %}
-  </div>
-</section>
+    </div>
+  </section>
+{% endif %}
+{% block body %}{% endblock %}
 </body>
 </html>
