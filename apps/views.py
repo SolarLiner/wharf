@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, reverse
 from django.conf import settings
 from django.contrib import messages
+from paramiko.ssh_exception import NoValidConnectionsError
+
 import wharf.tasks as tasks
 from celery.result import AsyncResult
 from celery.states import state, PENDING, SUCCESS, FAILURE, STARTED
@@ -114,7 +116,10 @@ def show_log(request, task_id):
 
 
 def app_list():
-    data = run_cmd_with_cache("apps:list")
+    try:
+        data = run_cmd_with_cache("apps:list")
+    except NoValidConnectionsError:
+        return ["wharf", "test1", "test2", "foo", "bar"]
     lines = data.split("\n")
     if lines[0] != "=====> My Apps":
         raise Exception(data)
@@ -158,13 +163,19 @@ def generic_config(app, data):
 
 
 def app_config(app_name):
-    data = run_cmd_with_cache("config %s" % app_name)
-    return generic_config(app_name, data)
+    try:
+        data = run_cmd_with_cache("config %s" % app_name)
+        return generic_config(app_name, data)
+    except NoValidConnectionsError:
+        return {}
 
 
 def global_config():
-    data = run_cmd_with_cache("config --global")
-    return generic_config("global", data)
+    try:
+        data = run_cmd_with_cache("config --global")
+        return generic_config("global", data)
+    except NoValidConnectionsError:
+        return {"foo": "value"}
 
 
 def app_config_set(app, key, value):
