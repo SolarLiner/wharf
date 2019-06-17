@@ -1,37 +1,135 @@
 {% extends "base.html" %}
+{% block navbar_end %}
+  <form action="{% url 'refresh_all' %}" method="post" class="navbar-item" style="display: inline-block">
+    {% csrf_token %}
+    <input type="submit" value="Refresh" class="button">
+  </form>
+  <div class="navbar-item">
+    <button class="button is-primary is-inverted" data-modal-trigger="createAppModal">Create app</button>
+  </div>
+  {{ block.super }}
+{% endblock %}
 {% block body %}
-<h1 id="list_apps">Wharf</h1>
-<form class="form" action="{{ url('refresh_all') }}" method="POST">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-primary" id="refresh_info">Refresh Dokku information</button>
-</form>
-<h3>Apps</h3>
-<ul class=apps>
-{% for app in apps %}
-  <h2><li><a href="{{ url('app_info', app_name=app) }}">{{ app }}</a></li></h2>
-{% else %}
-  <li><em>Unbelievable.  No apps here so far</em></li>
-{% endfor %}
-</ul>
-<h3>New app</h3>
-<form class="form" action="{{ url('index') }}" method="POST">
-  {% csrf_token %}
-  <input type="hidden" name="kind" value="app" />
-  {{ app_form | bootstrap }}
-  <button type="submit" class="btn btn-primary" id="create_app">Create app</button>
-</form>
-<br />
-<h2>Global Config</h2>
-<ul class=config>
-  {% for (k,v) in config %}
-    <li>{{ k }} = {{ v }}</li>
-  {% endfor %}
-</ul>
-<h3>New item</h3>
-<form action="{{ url('global_config_set') }}" method="POST">
-  {% csrf_token %}
-  <input type="hidden" name="kind" value="config" />
-  {{ config_form | bootstrap }}
-  <input class="form-control" type="submit" value="Submit" />
-</form>
+  <header class="hero is-primary">
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title is-2">Wharf</h1>
+        <h2 class="subtitle is-4">Applications</h2>
+      </div>
+    </div>
+  </header>
+  <section class="section">
+    <div class="container">
+      <div class="columns is-multiline">
+        {% for app in apps %}
+          <div class="column is-4 is-6-tablet is-12-mobile">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">{{ app }}</p>
+              </header>
+              <div class="card-content">
+                <p class="content">{% lorem 3 p %}</p>
+              </div>
+              <footer class="card-footer">
+                <a href="{% url 'app_info' app_name=app %}">Manage</a>
+              </footer>
+            </div>
+          </div>
+        {% empty %}
+          <div class="column is-12 is-8-desktop is-offset-2-desktop">
+            <div class="message is-info">
+              <div class="message-header">
+                <p>No applications</p>
+              </div>
+              <div class="message-body">
+                <p class="content">You have no applications defined yet.</p>
+                <div class="button is-inverted" data-modal-trigger="createAppModal">Create app</div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <h2 class="title is-5">Global configuration</h2>
+      <table class="table is-striped is-fullwidth">
+        <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for k,v in config %}
+          <tr>
+            <td>{{ k }}</td>
+            <td>{{ v }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <form action="{% url 'global_config_set' %}" method="post">
+        {% csrf_token %}
+        <h3 class="title is-6">Add configuration value</h3>
+        <div class="field is-horizontal">
+          <div class="field-label is-normal"><label class="label">Config value</label></div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control is-expanded">
+                <input name="{{ config_form.key.html_name }}" type="text" class="input" placeholder="Key">
+              </div>
+            </div>
+            <div class="field">
+              <div class="control is-expanded"><input name="{{ config_form.value.html_name }}" type="text" class="input"
+                                                      placeholder="Value"></div>
+            </div>
+          </div>
+        </div>
+        <div class="field is-horizontal">
+          <div class="field-label"></div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <button type="submit" class="button is-primary">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+  <div class="modal" id="createAppModal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <div class="box">
+        <h3 class="title is-5">Add application</h3>
+        <form action="{% url 'index' %}" method="post" class="container">
+          {% csrf_token %}
+          <div class="field"><label class="label">Application name</label>
+            <div class="control"><input type="text" class="input" name="{{ app_form.name.html_name }}"></div>
+          </div>
+          <button type="submit" class="button is-primary">Create app</button>
+        </form>
+      </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+  <script>
+  document.querySelectorAll("[data-modal-trigger]").forEach(el => {
+    const modalTarget = el.getAttribute("data-modal-trigger");
+    el.addEventListener("click", e => {
+      document.getElementById(modalTarget).classList.toggle("is-active");
+    });
+  });
+
+  [document.querySelectorAll(".modal-background"), document.querySelectorAll(".modal-close")].forEach(q => {
+    q.forEach(el => {
+      el.addEventListener("click", e => {
+        el.parentElement.classList.remove("is-active");
+      });
+    })
+  });
+  </script>
 {% endblock %}

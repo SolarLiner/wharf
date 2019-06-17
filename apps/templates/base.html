@@ -9,6 +9,45 @@
   <link rel="stylesheet" href="{% sass_src "styles.scss" %}">
 </head>
 <body class="bg-light">
+<nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="{% url 'index' %}">
+      Wharf
+    </a>
+
+    <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+       data-target="navbarBasicExample">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+
+  <div id="navbarBasicExample" class="navbar-menu">
+    <div class="navbar-start">
+      {% block navbar_start %}
+        <a class="navbar-item" href="{% url 'index' %}">
+          Apps
+        </a>
+      {% endblock %}
+    </div>
+
+    <div class="navbar-end">
+      {% block navbar_end %}
+        {% if request.user.is_authenticated %}
+        {% else %}
+          <div class="navbar-item">
+            <div class="buttons">
+              <a class="button is-primary">
+                Log in
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      {% endblock %}
+    </div>
+  </div>
+</nav>
 {% if messages %}
   <section class="section">
     <div class="container">
