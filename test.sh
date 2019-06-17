@@ -28,6 +28,7 @@ if [ ! -d $KEY_DIR ]; then
 fi
 sudo chown dokku:dokku $KEY_DIR
 (dokku storage:list wharf | grep ssh) || dokku storage:mount wharf $KEY_DIR:/root/.ssh
+(dokku storage:list wharf | grep var/run) || dokku storage:mount wharf /var/run/dokku-daemon/:/var/run/dokku-daemon/
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku HEAD:refs/heads/master
 python3 check_boot.py $(dokku url wharf)
 if [ ! -f $KEY_DIR/id_rsa ]; then

@@ -14,9 +14,14 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
     set -eux -o pipefail
-    sudo apt-get install --no-install-recommends -y python3-pip git apt-transport-https curl redis-server chromium-driver python3-setuptools python3-wheel python3-dev libssl-dev
+    sudo apt-get install --no-install-recommends -y python3-pip git apt-transport-https curl redis-server \
+    chromium-driver python3-setuptools python3-wheel python3-dev libssl-dev socat
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable" | sudo tee /etc/apt/sources.list.d/docker.list
+    cd /opt
+    sudo git clone https://github.com/dokku/dokku-daemon
+    cd dokku-daemon
+    sudo make install
     cd /vagrant
     pip3 install -r requirements.txt
     CHROMEDRIVER_PATH=/usr/bin/chromedriver ./test.sh
