@@ -1,0 +1,13 @@
+{
+  "name": "wharf",
+  "version": "0.0.1",
+  "description": "Wharf UI for Dokku",
+  "main": "index.js",
+  "repository": "https://github.com/palfrey/wharf.git",
+  "author": "Nathan Graule <solarliner@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "bulma": "^0.7.5"
+  }
+}
